@@ -37,9 +37,6 @@ class MainView(ttk.Frame):
         ttk.Label(form, text="Numer seryjny").grid(row=0, column=6, sticky="w")
         ttk.Entry(form, textvariable=self.serial_number_var, width=18).grid(row=0, column=7, padx=5)
 
-        ttk.Button(form, text="Dodaj", command=self.on_add).grid(row=0, column=8, padx=(10, 0))
-
-        # Tabela
         columns = ("id", "name", "category", "purchase_date", "serial_number")
         self.tree = ttk.Treeview(self, columns=columns, show="headings", selectmode="browse")
 
@@ -63,7 +60,8 @@ class MainView(ttk.Frame):
 
         actions = ttk.Frame(self)
         actions.pack(fill="x", padx=10, pady=(0, 10))
-        ttk.Button(actions, text="Usuń zaznaczony", command=self.on_delete).pack(anchor="w")
+        ttk.Button(actions, text="Dodaj", command=self.on_add).pack(anchor="w")
+        ttk.Button(actions, text="Usuń", command=self.on_delete).pack(anchor="w", pady=(5, 0))
         ttk.Button(actions, text="Odśwież", command=self.refresh).pack(anchor="w", pady=(5, 0))
 
     def refresh(self):
