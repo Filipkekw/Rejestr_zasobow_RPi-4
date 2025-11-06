@@ -15,7 +15,7 @@ def main():
 
     root = tk.Tk()
     root.title("Rejestr zasobów")
-    root.geometry("1000x550")
+    root.geometry("800x480")
 
     try:
         style = ttk.Style()

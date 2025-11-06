@@ -22,17 +22,11 @@ class MainView(ttk.Frame):
         self.serial_number_var = tk.StringVar()
 
         ttk.Label(form, text="Nazwa").grid(row=0, column=0, sticky="w")
-        ttk.Entry(form, textvariable=self.name_var, width=25).grid(row=0, column=1, padx=5)
+        ttk.Entry(form, textvariable=self.name_var, width=10).grid(row=0, column=1, padx=5)
 
         ttk.Label(form, text="Kategoria").grid(row=0, column=2, sticky="w")
         # Combobox zamiast Entry + brak możliwości pisania
-        self.category_cb = ttk.Combobox(
-            form,
-            textvariable=self.category_var,
-            values=self.categories,
-            state="readonly",
-            width=18,
-        )
+        self.category_cb = ttk.Combobox(form, textvariable=self.category_var, values=self.categories, state="readonly", width=10)
         self.category_cb.grid(row=0, column=3, padx=5)
         self.category_cb.current(0)  # domyślne: "Narzędzia"
 
@@ -55,10 +49,10 @@ class MainView(ttk.Frame):
         self.tree.heading("serial_number", text="Numer seryjny")
 
         self.tree.column("id", width=60, anchor="center")
-        self.tree.column("name", width=240, anchor="w")
-        self.tree.column("category", width=160, anchor="w")
+        self.tree.column("name", width=160, anchor="w")
+        self.tree.column("category", width=100, anchor="w")
         self.tree.column("quantity", width=80, anchor="e")
-        self.tree.column("serial_number", width=180, anchor="w")
+        self.tree.column("serial_number", width=150, anchor="w")
 
         vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=vsb.set)
@@ -69,8 +63,8 @@ class MainView(ttk.Frame):
         # Akcje
         actions = ttk.Frame(self)
         actions.pack(fill="x", padx=10, pady=(0, 10))
-        ttk.Button(actions, text="Usuń zaznaczony", command=self.on_delete).pack(side="left")
-        ttk.Button(actions, text="Odśwież", command=self.refresh).pack(side="left", padx=5)
+        ttk.Button(actions, text="Usuń zaznaczony", command=self.on_delete).pack(anchor="w")
+        ttk.Button(actions, text="Odśwież", command=self.refresh).pack(anchor="w", pady=(5,0))
 
     def refresh(self):
         # Wyczyść tabelę
@@ -118,7 +112,7 @@ class MainView(ttk.Frame):
         self.name_var.set("")
         self.category_cb.current(0)  # wróć do domyślnej kategorii
         self.quantity_var.set("1")
-        self.location_var.set("")
+        self.serial_number_var.set("")
         self.refresh()
 
     def _selected_id(self):
@@ -136,7 +130,7 @@ class MainView(ttk.Frame):
             messagebox.showinfo("Informacja", "Zaznacz wiersz do usunięcia.")
             return
 
-        if not messagebox.askyesno("Potwierdzenie", f"Czy usunąć ID={item_id}?"):
+        if not messagebox.askyesno("Potwierdzenie", "Czy na pewno chcesz usunąć ten wiersz?"):
             return
 
         try:
