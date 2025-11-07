@@ -1,6 +1,6 @@
 # Rejestr zasobow RPi 4
 
-Lekka aplikacja do rejestru zasobów na Raspberry Pi 4 (Tkinter + SQLite). Interfejs w Tkinter, baza danych w pliku data/inventory.db.
+Lekka aplikacja do rejestru zasobów na Raspberry Pi 4 (Tkinter + SQLite). Interfejs w Tkinter z bazą danych w pliku data/inventory.db.
 
 Funkcje
 - automatyczne połączenie z bazą SQLite (tworzy tabelę przy pierwszym uruchomieniu)
@@ -15,6 +15,12 @@ Wymagania
 - Tkinter (python3-tk) i sqlite3
   - sudo apt update
   - sudo apt install -y python3-tk sqlite3
+- Tkcalendar
+  - sudo apt install python3-pip
+  - pip3 install --user tkcalendar
+    - w przypadku pojawienia się błędu o zablokowaniu instalacji z powodu błędu o treści "externally-managed-environment" trzeba użyć --break-system-packages
+    - UWAGA! Użycie tego łączy się z ryzykiem uszkodzenia instalacji pythona lub całego systemu operacyjnego!
+    -  Można obejść ten problem, lecz to będzie wymagało użycia wirtualnego środowiska (venv) i aplikacja będzie dostępna tylko w nim.
 
 Uruchomienie
 1) Sklonuj/kopiuj repozytorium na RPi.
@@ -38,5 +44,5 @@ project_root/
 ```
 
 Dostosowanie
-- Kategorie w Combobox: edytuj listę self.categories w ui/views.py (np. ["Narzędzia", "Meble", "RTV", "AGD", "IT", "Inne"]).
+- Kategorie w Combobox: edytuj listę self.categories w ui/views.py (np. ["Narzędzia", "IT", "Oprogramowanie", "Wyposażenie biurowe", "Transport", "BHP", "Meble", "Inne"]).
 - Lokalizacja bazy: zmień ścieżkę w main.py (domyślnie data/inventory.db).
