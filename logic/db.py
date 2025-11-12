@@ -41,5 +41,12 @@ class Database:
         self.conn.execute("DELETE FROM inventory WHERE id = ?", (item_id,))
         self.conn.commit()
 
+    def update_item(self, item_id: int, name: str, category: str, purchase_date: str, serial_number: str, description:str) -> None:
+        self.conn.execute(
+            "UPDATE inventory SET name=?, category=?, purchase_date=?, serial_number=?, description=? WHERE id=?",
+            (name, category, purchase_date, serial_number, description, item_id),
+        )
+        self.conn.commit()
+
     def close(self):
         self.conn.close()

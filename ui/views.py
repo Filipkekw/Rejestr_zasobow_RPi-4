@@ -1,13 +1,14 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
-from datetime import date
+from datetime import date, datetime
 
 
 class MainView(ttk.Frame):
     def __init__(self, master, db):
         super().__init__(master)
         self.db = db
+        self.edit_id = None
         self.categories = ["Narzędzia", "IT", "Oprogramowanie", "Wyposażenie biurowe", "Transport", "BHP", "Meble", "Inne"]
         self._build_pages()
         self.show_list()
@@ -36,7 +37,7 @@ class MainView(ttk.Frame):
 
         # Pojawiają się dopiero po zaznaczeniu wiersza
         self.btn_delete = ttk.Button(actions, text="Usuń zaznaczony", command=self.on_delete)
-        self.btn_edit = ttk.Button(actions, text="Edytuj", command=self.on_edit)
+        self.btn_edit = ttk.Button(actions, text="Edytuj", command=self.show_edit)
 
         # Zawsze widoczny i zawsze ostatni na pasku
         self.btn_refresh = ttk.Button(actions, text="Odśwież", command=self.refresh)
@@ -76,8 +77,8 @@ class MainView(ttk.Frame):
         self._update_selection_actions()
 
     def _build_add_page(self, parent: ttk.Frame):
-        header = ttk.Label(parent, text="Dodaj zasób", font=("Arial", 12, "bold"))
-        header.pack(anchor="w", padx=10, pady=(10, 5))
+        self.add_header = ttk.Label(parent, text="Dodaj zasób", font=("Arial", 12, "bold"))
+        self.add_header.pack(anchor="w", padx=10, pady=(10, 5))
 
         form = ttk.Frame(parent)
         form.pack(fill="x", padx=10, pady=10)
@@ -112,8 +113,10 @@ class MainView(ttk.Frame):
         # Przyciski akcji
         buttons = ttk.Frame(parent)
         buttons.pack(fill="x", padx=10, pady=(0, 10))
-        ttk.Button(buttons, text="Zapisz", command=self.on_add_submit).pack(side="left")
-        ttk.Button(buttons, text="Anuluj", command=self.on_add_cancel).pack(side="left", padx=6)
+        self.btn_save = ttk.Button(buttons, text="Zapisz", command=self.on_form_submit)
+        self.btn_save.pack(side="left")
+        self.btn_cancel = ttk.Button(buttons, text="Anuluj", command=self.on_add_cancel)
+        self.btn_cancel.pack(side="left", padx=6)
 
         form.grid_columnconfigure(1, weight=1)
 
@@ -126,16 +129,62 @@ class MainView(ttk.Frame):
         self._hide_all()
         self.list_page.pack(fill="both", expand=True)
         self.refresh()
+        self._update_selection_actions()
 
     def show_add(self):
         self._hide_all()
         self.add_page.pack(fill="both", expand=True)
+        self.edit_id = None
+        self.add_header.config(text="Dodaj zasób")
+        self.btn_save.config(text="Zapisz")
         # ustaw domyślne wartości
         self.add_name_var.set("")
         self.add_category_cb.current(0)
         self.add_date_cb.set_date(date.today())
         self.add_serial_number_var.set("")
         self.add_description_var.set("")
+
+    def show_edit(self):
+        # pobierz ID zaznaczonego wiersza
+        sel = self.tree.selection()
+        if not sel:
+            return
+        try:
+            item_id = int(sel[0])
+        except ValueError:
+            return
+
+        # Spróbuj pobrać dane z tabeli (Treeview zawiera wszystkie potrzebne kolumny)
+        vals = self.tree.item(sel[0], "values")
+        _, name, category, purchase_date, serial_number, description = vals
+
+        # przełącz stan na edycję
+        self.edit_id = item_id
+        self.add_header.config(text=f"Edytuj zasób (ID: {item_id})")
+        self.btn_save.config(text="Zaktualizuj")
+
+        # wypełnij pola formularza
+        self.add_name_var.set(name)
+        # ustaw kategorię (jeśli nie ma w liście, np. custom → ustaw "Inne")
+        if category in self.categories:
+            self.add_category_var.set(category)
+        else:
+            self.add_category_var.set("Inne")
+
+        # ustaw datę
+        try:
+            d = datetime.strptime(purchase_date, "%Y-%m-%d").date()
+            self.add_date_cb.set_date(d)
+        except Exception:
+            self.add_date_cb.set_date(date.today())
+
+        self.add_serial_number_var.set(serial_number)
+
+        self.add_description_var.set(description)
+
+        # pokaż stronę formularza
+        self._hide_all()
+        self.add_page.pack(fill="both", expand=True)
 
     # --------- operacje na liście ---------
     def refresh(self):
@@ -155,6 +204,11 @@ class MainView(ttk.Frame):
                 "", "end", iid=str(r["id"]),
                 values=(r["id"], r["name"], r.get("category", "") or "", r.get("purchase_date", "") or "", r.get("serial_number", "") or "", r.get("description", "") or "")
             )
+        
+        sel = self.tree.selection()
+        if sel:
+            self.tree.selection_remove(sel)
+        self._update_selection_actions()
 
     def _selected_id(self):
         sel = self.tree.selection()
@@ -191,11 +245,9 @@ class MainView(ttk.Frame):
             if self.btn_delete.winfo_ismapped():
                 self.btn_delete.pack_forget()
                 self.btn_edit.pack_forget()
-    def on_edit(self):
-        pass
 
     # --------- zapis na stronie Dodawanie ---------
-    def on_add_submit(self):
+    def on_form_submit(self):
         name = self.add_name_var.get().strip()
         category = self.add_category_var.get().strip()
         purchase_date = self.add_date_cb.get_date().strftime("%Y-%m-%d")
@@ -207,19 +259,18 @@ class MainView(ttk.Frame):
             return
 
         try:
-            self.db.add_item(
-                name=name,
-                category=category,
-                purchase_date=purchase_date,
-                serial_number=serial_number,
-                description=description
-            )
+            if self.edit_id is None:
+                self.db.add_item(name=name, category=category, purchase_date=purchase_date, serial_number=serial_number, description=description)
+            else:
+                self.db.update_item(self.edit_id, name=name, category=category, purchase_date=purchase_date, serial_number=serial_number, description=description)
         except Exception as e:
             messagebox.showerror("Błąd", f"Nie udało się dodać zasobu: {e}")
             return
 
-        # po zapisie wróć na listę i odśwież
+        self.edit_id = None
         self.show_list()
+        self.refresh()
 
     def on_add_cancel(self):
         self.show_list()
+        self.refresh()
