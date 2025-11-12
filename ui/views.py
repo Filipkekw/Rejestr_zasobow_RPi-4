@@ -72,6 +72,8 @@ class MainView(ttk.Frame):
 
         # Reaguj na zmianę zaznaczenia
         self.tree.bind("<<TreeviewSelect>>", lambda e: self._update_selection_actions())
+        self.tree.bind("<Double-1>", lambda e: self.show_edit())
+        self.tree.bind("<Delete>", lambda e: self.on_delete())
 
         # Upewnij się, że na starcie przyciski selekcyjne są ukryte
         self._update_selection_actions()
@@ -205,9 +207,12 @@ class MainView(ttk.Frame):
                 values=(r["id"], r["name"], r.get("category", "") or "", r.get("purchase_date", "") or "", r.get("serial_number", "") or "", r.get("description", "") or "")
             )
         
-        sel = self.tree.selection()
-        if sel:
-            self.tree.selection_remove(sel)
+        try:
+            self.tree.selection_set(())
+        except Exception:
+            for lid in self.tree.selection():
+                self.tree.selection_remove(lid)
+        self.tree.focus("")
         self._update_selection_actions()
 
     def _selected_id(self):
@@ -237,14 +242,11 @@ class MainView(ttk.Frame):
         has_sel = bool(self.tree.selection())
         if has_sel:
             # wstaw przed przyciskiem 'Odśwież', żeby kolejność była: Dodaj, Usuń, Edytuj, Odśwież
-            if not self.btn_delete.winfo_ismapped():
-                self.btn_delete.pack(side="left", padx=(6, 0), before=self.btn_refresh)
-                self.btn_edit.pack(side="left", padx=(6, 0), before=self.btn_refresh)
+            self.btn_delete.pack(side="left", padx=(6,0), before=self.btn_refresh)
+            self.btn_edit.pack(side="left", padx=(6,0), before=self.btn_refresh)
         else:
-            # ukryj, jeśli były widoczne
-            if self.btn_delete.winfo_ismapped():
-                self.btn_delete.pack_forget()
-                self.btn_edit.pack_forget()
+            self.btn_delete.pack_forget()
+            self.btn_edit.pack_forget()
 
     # --------- zapis na stronie Dodawanie ---------
     def on_form_submit(self):
@@ -269,8 +271,6 @@ class MainView(ttk.Frame):
 
         self.edit_id = None
         self.show_list()
-        self.refresh()
 
     def on_add_cancel(self):
         self.show_list()
-        self.refresh()
