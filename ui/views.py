@@ -10,6 +10,8 @@ class MainView(ttk.Frame):
         self.db = db
         self.edit_id = None
         self.categories = ["Narzędzia", "IT", "Oprogramowanie", "Wyposażenie biurowe", "Transport", "BHP", "Meble", "Inne"]
+        self.sort_by = "id"
+        self.sort_desc = False
         self._build_pages()
         self.show_list()
 
@@ -45,7 +47,7 @@ class MainView(ttk.Frame):
         
         ttk.Label(actions, text="Kategoria:").pack(side="left", padx=(12,4))
         self.filter_category_var = tk.StringVar(value="Wszystkie")
-        self.filter_category_cb = ttk.Combobox(actions, textvariable=self.filter_category_var, state="readonly", width=24)
+        self.filter_category_cb = ttk.Combobox(actions, textvariable=self.filter_category_var, state="readonly", width=20)
         self.filter_category_cb.pack(side="left")
         self.filter_category_cb.bind("<<ComboboxSelected>>", lambda e: self.refresh())
 
@@ -59,14 +61,14 @@ class MainView(ttk.Frame):
         self.tree.heading("id", text="ID")
         self.tree.heading("name", text="Przedmiot")
         self.tree.heading("category", text="Kategoria")
-        self.tree.heading("purchase_date", text="Data zakupu")
+        self.tree.heading("purchase_date", text="Data zakupu", command=self._on_heading_purchase_date)
         self.tree.heading("serial_number", text="Numer seryjny")
         self.tree.heading("description", text="Opis")
 
         self.tree.column("id", width=20, anchor="center")
-        self.tree.column("name", width=200, anchor="w")
+        self.tree.column("name", width=190, anchor="w")
         self.tree.column("category", width=105, anchor="w")
-        self.tree.column("purchase_date", width=60, anchor="center")
+        self.tree.column("purchase_date", width=70, anchor="center")
         self.tree.column("serial_number", width=130, anchor="w")
         self.tree.column("description", width=95 , anchor="w")
 
@@ -221,6 +223,25 @@ class MainView(ttk.Frame):
                 key=lambda r: ((r["id"]))
             )
 
+        if self.sort_by == "purchase_date":
+            rows_with_date = []
+            rows_empty = []
+            for r in rows:
+                s = (r.get("purchase_date") or "").strip()
+                try:
+                    d = datetime.strptime(s, "%Y-%m-%d").date()
+                except Exception:
+                    d = None
+                if d is None:
+                    rows_empty.append(r)
+                else:
+                    rows_with_date.append((d, r))
+            
+            rows_with_date.sort(key=lambda t: (t[0], t[1]["id"]), reverse=self.sort_desc)
+            rows = [r for _, r in rows_with_date] + rows_empty
+        else:
+            rows = sorted(rows, key=lambda r: r["id"])
+
         # wstaw dane
         for r in rows:
             self.tree.insert(
@@ -235,6 +256,7 @@ class MainView(ttk.Frame):
                 self.tree.selection_remove(lid)
         self.tree.focus("")
         self._update_selection_actions()
+        self._update_sort_indicator()
 
     def _selected_id(self):
         sel = self.tree.selection()
@@ -279,6 +301,24 @@ class MainView(ttk.Frame):
         self.filter_category_cb["values"] = values
         if current not in values:
             self.filter_category_var.set("Wszystkie")
+
+    def _on_heading_purchase_date(self):
+        if self.sort_by != "purchase_date":
+            self.sort_by = "purchase_date"
+            self.sort_desc = False
+        elif not self.sort_desc:
+            self.sort_desc = True
+        else:
+            self.sort_by = "id"
+            self.sort_desc = False
+        self.refresh()
+
+    def _update_sort_indicator(self):
+        if self.sort_by == "purchase_date":
+            arrow = "▼" if self.sort_desc else "▲"
+            self.tree.heading("purchase_date", text=f"Data zakupu {arrow}", command=self._on_heading_purchase_date)
+        else:
+            self.tree.heading("purchase_date", text="Data zakupu", command=self._on_heading_purchase_date)
 
     # --------- zapis na stronie Dodawanie ---------
     def on_form_submit(self):

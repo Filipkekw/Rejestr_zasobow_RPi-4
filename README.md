@@ -5,9 +5,12 @@ Lekka aplikacja do rejestru zasobów na Raspberry Pi 4 (Tkinter + SQLite). Inter
 Funkcje
 - automatyczne połączenie z bazą SQLite (tworzy tabelę przy pierwszym uruchomieniu)
 - podgląd zasobów w tabeli (Treeview)
-- dodawanie pozycji
-- usuwanie zaznaczonej pozycji
+- dodawanie wpisu
+- usuwanie zaznaczonej wpisu
 - odświeżanie listy
+- edycja istniejącego wpisu
+- filtrowanie wpisów po kategorii
+- sortowania wpisów według daty dodania (rosnąco/malejąco)
 
 Wymagania
 - Raspberry Pi 4 z Raspberry Pi OS
@@ -43,6 +46,6 @@ project_root/
 └── README.md
 ```
 
-Dostosowanie
+Dostosowanie pod użytkownika
 - Kategorie w Combobox: edytuj listę self.categories w ui/views.py (np. ["Narzędzia", "IT", "Oprogramowanie", "Wyposażenie biurowe", "Transport", "BHP", "Meble", "Inne"]).
 - Lokalizacja bazy: zmień ścieżkę w main.py (domyślnie data/inventory.db).
