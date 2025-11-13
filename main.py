@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from ui.views import MainView
 from logic.db import Database
+import tkinter.font as tkfont
 
 
 def main():
@@ -17,12 +18,16 @@ def main():
     root.title("Rejestr zasobów")
     root.geometry("800x480")
 
-    try:
-        style = ttk.Style()
-        if "clam" in style.theme_names():
-            style.theme_use("clam")
-    except Exception:
-        pass
+    style = ttk.Style()
+    if "clam" in style.theme_names():
+        style.theme_use("clam")
+
+    default_font = tkfont.nametofont("TkDefaultFont")
+    style.configure("Treeview", font=default_font)
+    heading_font = tkfont.Font(family=default_font.cget("family"),
+                            size=default_font.cget("size"),
+                            weight="normal")
+    style.configure("Treeview.Heading", font=heading_font)
 
     MainView(root, db=db).pack(fill="both", expand=True)
 
