@@ -6,11 +6,13 @@ Funkcje
 - automatyczne połączenie z bazą SQLite (tworzy tabelę przy pierwszym uruchomieniu)
 - podgląd zasobów w tabeli (Treeview)
 - dodawanie wpisu
-- usuwanie zaznaczonej wpisu
+- usuwanie zaznaczonego wpisu
 - odświeżanie listy
 - edycja istniejącego wpisu
 - filtrowanie wpisów po kategorii
 - sortowania wpisów według daty dodania (rosnąco/malejąco)
+- wyszukiwanie wpisów po części nazwy lub numeru seryjnego
+- eksport danych do pliku CSV
 
 Wymagania
 - Raspberry Pi 4 z Raspberry Pi OS

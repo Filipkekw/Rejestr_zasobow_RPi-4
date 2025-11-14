@@ -1,7 +1,9 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from datetime import date, datetime
 from tkcalendar import Calendar
+from logic.export import export_inventory_to_csv
+from pathlib import Path
 
 class MainView(ttk.Frame):
     def __init__(self, master, db):
@@ -49,6 +51,9 @@ class MainView(ttk.Frame):
         self.filter_category_cb = ttk.Combobox(actions, textvariable=self.filter_category_var, state="readonly", width=20)
         self.filter_category_cb.pack(side="left")
         self.filter_category_cb.bind("<<ComboboxSelected>>", lambda e: self.refresh())
+
+        self.btn_export = ttk.Button(actions, text="Eksport CSV", command=self.on_export)
+        self.btn_export.pack(side="left", padx=(6, 0))
 
         search_box = ttk.Frame(actions)
         search_box.pack(side="right", padx=(6, 0))
@@ -300,7 +305,20 @@ class MainView(ttk.Frame):
             return
 
         self.refresh()
-    
+
+    def on_export(self):
+        try:
+            file_path = filedialog.asksaveasfilename(title="Zapisz jako", defaultextension=".csv", filetypes=[("Pliki CSV", "*.csv"), ("Wszystkie pliki", "*.*")])
+            if not file_path:
+                return
+            rows = self.db.list_items()
+
+            export_inventory_to_csv(rows, Path(file_path))
+            messagebox.showinfo("Eksport zakończony", f"Zapisano do pliku:\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Błąd eksportu", f"Nie udało się wyeksportować danych:\n{e}")
+
     def _update_selection_actions(self):
         has_sel = bool(self.tree.selection())
         if has_sel:
