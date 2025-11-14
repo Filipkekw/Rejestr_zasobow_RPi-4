@@ -50,8 +50,15 @@ class MainView(ttk.Frame):
         self.filter_category_cb.pack(side="left")
         self.filter_category_cb.bind("<<ComboboxSelected>>", lambda e: self.refresh())
 
-        self.btn_search = ttk.Button(actions, style="Fixed.TButton", text="Szukaj", width=8)
-        self.btn_search.pack(side="left", padx=(6,0))
+        search_box = ttk.Frame(actions)
+        search_box.pack(side="right", padx=(6, 0))
+
+        ttk.Label(search_box, text="Szukaj:").pack(side="left", padx=(0, 4))
+        self.search_var = tk.StringVar()
+        self.search_entry = ttk.Entry(search_box, textvariable=self.search_var, width=20)
+        self.search_entry.pack(side="left")
+
+        self.search_var.trace_add("write", lambda *args: self.refresh())
 
         # Tabela + scrollbar
         table_wrap = ttk.Frame(parent)
@@ -226,6 +233,12 @@ class MainView(ttk.Frame):
                 rows,
                 key=lambda r: ((r["id"]))
             )
+        
+        query = (self.search_var.get() if hasattr(self, "search_var") else "").strip().lower()
+        if query:
+            rows = [r for r in rows if 
+                    query in (r.get("name", "") or "").lower()
+                    or query in (r.get("serial_number", "") or "").lower()]
 
         if self.sort_by == "purchase_date":
             rows_with_date = []
@@ -254,7 +267,7 @@ class MainView(ttk.Frame):
             )
         
         try:
-            self.tree.selection_set(())
+            self.tree.selection_set()
         except Exception:
             for lid in self.tree.selection():
                 self.tree.selection_remove(lid)
@@ -354,6 +367,7 @@ class MainView(ttk.Frame):
     def on_add_cancel(self):
         self.show_list()
 
+# Kalendarz na stronie edycji/dodawania
 class InlineDatePicker(ttk.Frame):
     def __init__(self, master, date_pattern="yyyy-mm-dd", width=12,
                  firstweekday="monday", showweeknumbers=False):
