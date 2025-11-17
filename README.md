@@ -13,6 +13,7 @@ Funkcje
 - sortowania wpisów według daty dodania (rosnąco/malejąco)
 - wyszukiwanie wpisów po części nazwy lub numeru seryjnego
 - eksport danych do pliku CSV
+- RPi jako Wi-Fi serwer
 
 Wymagania
 - Raspberry Pi 4 z Raspberry Pi OS
@@ -45,9 +46,27 @@ project_root/
 │   ├── __init__.py
 │   └── db.py               # obsługa SQLite
 ├── main.py                 # punkt startowy aplikacji
+├── wifi_server.py          # obsługa serwera http
 └── README.md
 ```
 
 Dostosowanie pod użytkownika
 - Kategorie w Combobox: edytuj listę self.categories w ui/views.py (np. ["Narzędzia", "IT", "Oprogramowanie", "Wyposażenie biurowe", "Transport", "BHP", "Meble", "Inne"]).
 - Lokalizacja bazy: zmień ścieżkę w main.py (domyślnie data/inventory.db).
+
+## Wi-Fi serwer
+
+### Wymagania systemowe
+- Raspberry Pi 4 lub nowsze, z Raspberry Pi OS (64‑bit; Lite lub Desktop)
+- dostęp do internetu (Wi‑Fi lub Ethernet)
+- zainstalowany Python 3.9 lub nowszy
+
+### Instalacja 
+1. ``` sudo apt update && sudo apt upgrade -y ```
+2. ``` pip install fastapi uvicorn ```
+- w przypadku pojawienia się błędu o zablokowaniu instalacji z powodu błędu o treści "externally-managed-environment" trzeba użyć --break-system-packages
+    - UWAGA! Użycie tego łączy się z ryzykiem uszkodzenia instalacji pythona lub całego systemu operacyjnego!
+-  Można obejść ten problem, lecz to będzie wymagało użycia wirtualnego środowiska (venv) i aplikacja będzie dostępna tylko w nim.
+
+## Jak połączyć się z serwerem http?
+1. Poprzez aplikację z github.com/filipkekw/Rejestr-zasobow-klient
