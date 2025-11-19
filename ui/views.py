@@ -5,6 +5,7 @@ from tkcalendar import Calendar
 from logic.export import export_inventory_to_csv, detect_usb_mount
 from pathlib import Path
 import requests
+from logic.ws_client import WSListener
 
 class MainView(ttk.Frame):
     def __init__(self, master, db):
@@ -16,6 +17,9 @@ class MainView(ttk.Frame):
         self.sort_desc = False
         self._build_pages()
         self.show_list()
+
+        self.ws_listener = WSListener(self.refresh)
+        self.ws_listener.start()
 
     # --------- budowa stron ---------
     def _build_pages(self):
