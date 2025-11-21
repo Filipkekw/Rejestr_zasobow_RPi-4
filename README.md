@@ -1,72 +1,53 @@
-# Rejestr zasobow RPi 4
+# Rejestr zasobów - serwer RPi (Tkinter + FastAPI)
 
-Lekka aplikacja do rejestru zasobów na Raspberry Pi 4 (Tkinter + SQLite). Interfejs w Tkinter z bazą danych w pliku data/inventory.db.
+Lekka aplikacja do rejestru zasobów na Raspberry Pi 4 (Tkinter + SQLite). 
+Interfejs w Tkinter z bazą danych w pliku ```data/inventory.db``` oraz API HTTP/WebSocket (FastAPI) dla klienta mobilnego.
 
-Funkcje
-- automatyczne połączenie z bazą SQLite (tworzy tabelę przy pierwszym uruchomieniu)
-- podgląd zasobów w tabeli (Treeview)
-- dodawanie wpisu
-- usuwanie zaznaczonego wpisu
-- odświeżanie listy
-- edycja istniejącego wpisu
-- filtrowanie wpisów po kategorii
-- sortowania wpisów według daty dodania (rosnąco/malejąco)
-- wyszukiwanie wpisów po części nazwy lub numeru seryjnego
-- eksport danych do pliku CSV
-- RPi jako Wi-Fi serwer
+## Wymagania 
 
-Wymagania
 - Raspberry Pi 4 z Raspberry Pi OS
-- Python 3.x
-- Tkinter (python3-tk) i sqlite3
-  - sudo apt update
-  - sudo apt install -y python3-tk sqlite3
-- Tkcalendar
-  - sudo apt install python3-pip
-  - pip3 install --user tkcalendar
-    - w przypadku pojawienia się błędu o zablokowaniu instalacji z powodu błędu o treści "externally-managed-environment" trzeba użyć --break-system-packages
+- Python 3.11+
+- zainstalowane pakiety:
+```bash
+sudo apt update
+sudo apt install python3 python3-pip sqlite3 -y
+pip install fastapi uvicorn websockets requests tkcalendar
+```    
+- w przypadku pojawienia się błędu o zablokowaniu instalacji z powodu błędu o treści "externally-managed-environment" trzeba dodać --break-system-packages
     - UWAGA! Użycie tego łączy się z ryzykiem uszkodzenia instalacji pythona lub całego systemu operacyjnego!
     -  Można obejść ten problem, lecz to będzie wymagało użycia wirtualnego środowiska (venv) i aplikacja będzie dostępna tylko w nim.
 
-Uruchomienie
-1) Sklonuj/kopiuj repozytorium na RPi.
-2) Upewnij się, że istnieją puste pliki ui/__init__.py i logic/__init__.py (dla importów).
-3) Uruchom:
-   - python3 main.py
-
-Struktura projektu
+## Struktura projektu
 ```
 project_root/
 ├── data/
 │   └── inventory.db        # baza SQLite (tworzona automatycznie)
 ├── ui/
-│   ├── __init__.py
 │   └── views.py            # GUI (Tkinter: formularz + tabela)
 ├── logic/
-│   ├── __init__.py
+│   ├── export.py           # obsługa eksportu danych do pliku .csv
+│   ├── ws_client.py        # synchronizacja danych pomiędzy aplikacją tkinter a flutter
 │   └── db.py               # obsługa SQLite
 ├── main.py                 # punkt startowy aplikacji
 ├── wifi_server.py          # obsługa serwera http
 └── README.md
 ```
+## Uruchamianie
+1. Uruchom serwer API na RPi:
+```bash
+python3 wifi_server.py
+```
+Serwer będzie dostępny pod adresem: ```http://<IP_RPi>:8000```
 
-Dostosowanie pod użytkownika
-- Kategorie w Combobox: edytuj listę self.categories w ui/views.py (np. ["Narzędzia", "IT", "Oprogramowanie", "Wyposażenie biurowe", "Transport", "BHP", "Meble", "Inne"]).
-- Lokalizacja bazy: zmień ścieżkę w main.py (domyślnie data/inventory.db).
+2. Uruchom aplikację GUI Tkinter:
+```bash
+python3 main.py
+```
+3. Klient Flutter musi być w tej samej sieci Wi-Fi i mieć ustawiony adres IP Raspberry Pi w pięciu miejscach w kodzie w plikach aplikacji klienta (szczegóły w pliku README.md aplikacji klienta).
 
-## Wi-Fi serwer
-
-### Wymagania systemowe
-- Raspberry Pi 4 lub nowsze, z Raspberry Pi OS (64‑bit; Lite lub Desktop)
-- dostęp do internetu (Wi‑Fi lub Ethernet)
-- zainstalowany Python 3.9 lub nowszy
-
-### Instalacja 
-1. ``` sudo apt update && sudo apt upgrade -y ```
-2. ``` pip install fastapi uvicorn ```
-- w przypadku pojawienia się błędu o zablokowaniu instalacji z powodu błędu o treści "externally-managed-environment" trzeba użyć --break-system-packages
-    - UWAGA! Użycie tego łączy się z ryzykiem uszkodzenia instalacji pythona lub całego systemu operacyjnego!
--  Można obejść ten problem, lecz to będzie wymagało użycia wirtualnego środowiska (venv) i aplikacja będzie dostępna tylko w nim.
-
-## Jak połączyć się z serwerem http?
-1. Poprzez aplikację z github.com/filipkekw/Rejestr-zasobow-klient
+## Funkcje
+- Dodawanie, edycja i usuwanie zasobów (Tkinter + Flutter).
+- Wspólna baza SQLite (data/inventory.db)
+- Sortowanie, filtrowanie i wyszukiwanie zasobów
+- Synchronizacja w czasie rzeczywistym (Websocket) między RPi a klientem.
+- Eksport zasobów do pliku .csv.
